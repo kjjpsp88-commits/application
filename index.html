@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Application Form</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f1f5f9;
+    color:#172033;
+}
+
+.header{
+    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    color:#fff;
+    text-align:center;
+    padding:25px 15px;
+}
+
+.header h1{font-size:25px;margin-bottom:6px}
+.header p{font-size:14px}
+
+.container{
+    width:94%;
+    max-width:650px;
+    margin:25px auto;
+}
+
+.card{
+    background:#fff;
+    padding:24px;
+    border-radius:20px;
+    box-shadow:0 8px 30px #0001;
+}
+
+.section{
+    font-size:18px;
+    font-weight:bold;
+    margin:8px 0 18px;
+    padding-bottom:10px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.field{margin-bottom:17px}
+
+label{
+    display:block;
+    font-size:14px;
+    font-weight:bold;
+    margin-bottom:7px;
+}
+
+input,select,textarea{
+    width:100%;
+    padding:14px;
+    border:1px solid #d1d5db;
+    border-radius:11px;
+    font-size:15px;
+    outline:none;
+}
+
+input:focus,select:focus,textarea:focus{
+    border-color:#2563eb;
+}
+
+textarea{
+    height:100px;
+    resize:none;
+}
+
+.upload{
+    padding:18px;
+    border:2px dashed #cbd5e1;
+    border-radius:13px;
+    background:#f8fafc;
+    text-align:center;
+}
+
+.upload input{
+    border:0;
+}
+
+.preview{
+    display:none;
+    margin-top:12px;
+}
+
+.preview img{
+    width:110px;
+    height:110px;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+.submit{
+    width:100%;
+    padding:16px;
+    margin-top:20px;
+    border:0;
+    border-radius:12px;
+    background:#2563eb;
+    color:#fff;
+    font-size:17px;
+    font-weight:bold;
+}
+
+.submit:disabled{
+    background:#94a3b8;
+}
+
+.status{
+    text-align:center;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.success{color:#16a34a}
+.error{color:#dc2626}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>📋 आवेदन फॉर्म</h1>
+    <p>कृपया अपनी जानकारी सही-सही भरें</p>
+</div>
+
+<div class="container">
+<div class="card">
+
+<div class="section">👤 व्यक्तिगत जानकारी</div>
+
+<div class="field">
+<label>पूरा नाम *</label>
+<input id="name" type="text" placeholder="अपना पूरा नाम">
+</div>
+
+<div class="field">
+<label>मोबाइल नंबर *</label>
+<input id="mobile" type="tel" maxlength="10"
+inputmode="numeric" placeholder="10 अंकों का मोबाइल नंबर">
+</div>
+
+<div class="field">
+<label>ईमेल</label>
+<input id="email" type="email" placeholder="example@gmail.com">
+</div>
+
+<div class="field">
+<label>तारीख *</label>
+<input id="date" type="date">
+</div>
+
+<div class="field">
+<label>सेवा *</label>
+<select id="service">
+<option value="">सेवा चुनें</option>
+<option>PAN Card Apply</option>
+<option>जाति प्रमाण पत्र</option>
+<option>निवास प्रमाण पत्र</option>
+<option>जन्म प्रमाण पत्र</option>
+<option>Bank Account Opening</option>
+<option>अन्य</option>
+</select>
+</div>
+
+<div class="field">
+<label>पूरा पता *</label>
+<textarea id="address"
+placeholder="अपना पूरा पता लिखें"></textarea>
+</div>
+
+<div class="section">📸 फोटो अपलोड करें</div>
+
+<div class="upload">
+<input id="photo" type="file" accept="image/*">
+
+<div id="photoName">
+कोई फोटो चयनित नहीं
+</div>
+
+<div class="preview" id="preview">
+<img id="previewImg">
+</div>
+</div>
+
+<div class="section" style="margin-top:25px">
+📎 दस्तावेज़ अपलोड करें
+</div>
+
+<div class="upload">
+<input id="document" type="file"
+accept="image/*,.pdf">
+
+<div id="documentName">
+कोई दस्तावेज़ चयनित नहीं
+</div>
+</div>
+
+<button class="submit"
+id="submitBtn"
+onclick="submitApplication()">
+✅ आवेदन जमा करें
+</button>
+
+<div class="status" id="status"></div>
+
+</div>
+</div>
+
+<script>
+
+/* अपना Apps Script Web App URL यहां डालें */
+const API_URL =
+"YOUR_APPS_SCRIPT_URL";
+
+
+let photoFile = null;
+let documentFile = null;
+
+
+/* PHOTO */
+
+document.getElementById("photo")
+.addEventListener("change",function(){
+
+    photoFile = this.files[0];
+
+    if(!photoFile) return;
+
+    document.getElementById("photoName")
+    .innerText = photoFile.name;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+
+        document.getElementById("previewImg")
+        .src = e.target.result;
+
+        document.getElementById("preview")
+        .style.display = "block";
+    };
+
+    reader.readAsDataURL(photoFile);
+});
+
+
+/* DOCUMENT */
+
+document.getElementById("document")
+.addEventListener("change",function(){
+
+    documentFile = this.files[0];
+
+    if(documentFile){
+
+        document.getElementById("documentName")
+        .innerText = documentFile.name;
+
+    }
+});
+
+
+/* FILE TO BASE64 */
+
+function fileToBase64(file){
+
+    return new Promise(function(resolve,reject){
+
+        if(!file){
+            resolve("");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(){
+
+            resolve(
+                reader.result.split(",")[1]
+            );
+
+        };
+
+        reader.onerror = reject;
+
+        reader.readAsDataURL(file);
+    });
+}
+
+
+/* SUBMIT */
+
+async function submitApplication(){
+
+    const name =
+    document.getElementById("name").value.trim();
+
+    const mobile =
+    document.getElementById("mobile").value.trim();
+
+    const email =
+    document.getElementById("email").value.trim();
+
+    const date =
+    document.getElementById("date").value;
+
+    const service =
+    document.getElementById("service").value;
+
+    const address =
+    document.getElementById("address").value.trim();
+
+
+    if(!name || !mobile || !date ||
+       !service || !address){
+
+        showStatus(
+            "⚠️ सभी जरूरी जानकारी भरें।",
+            false
+        );
+
+        return;
+    }
+
+
+    if(!/^[0-9]{10}$/.test(mobile)){
+
+        showStatus(
+            "⚠️ सही 10 अंकों का मोबाइल नंबर डालें।",
+            false
+        );
+
+        return;
+    }
+
+
+    if(API_URL === "https://script.google.com/macros/s/AKfycbyK4lWkUH3J-9AWDK4ZKRhNetXrtlFJknbRtsA0d-xLuley7nCK4S_VochcY_Fgh1aP8g/exec"){
+
+        showStatus(
+            "⚠️ पहले Apps Script URL डालें।",
+            false
+        );
+
+        return;
+    }
+
+
+    const button =
+    document.getElementById("submitBtn");
+
+    button.disabled = true;
+
+    button.innerText =
+    "⏳ आवेदन जमा हो रहा है...";
+
+
+    try{
+
+        const photoBase64 =
+        await fileToBase64(photoFile);
+
+        const documentBase64 =
+        await fileToBase64(documentFile);
+
+
+        const data = {
+
+            name:name,
+            mobile:mobile,
+            email:email,
+            date:date,
+            service:service,
+            address:address,
+
+            photoBase64:photoBase64,
+            photoName:
+            photoFile ? photoFile.name : "",
+            photoType:
+            photoFile ? photoFile.type : "",
+
+            documentBase64:documentBase64,
+            documentName:
+            documentFile ? documentFile.name : "",
+            documentType:
+            documentFile ? documentFile.type : ""
+
+        };
+
+
+        const response = await fetch(API_URL,{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"text/plain;charset=utf-8"
+            },
+
+            body:JSON.stringify(data)
+
+        });
+
+
+        const result =
+        await response.json();
+
+
+        if(result.success){
+
+            showStatus(
+                "✅ आपका आवेदन सफलतापूर्वक जमा हो गया!",
+                true
+            );
+
+            document.getElementById("name").value="";
+            document.getElementById("mobile").value="";
+            document.getElementById("email").value="";
+            document.getElementById("date").value="";
+            document.getElementById("service").value="";
+            document.getElementById("address").value="";
+            document.getElementById("photo").value="";
+            document.getElementById("document").value="";
+
+            document.getElementById("preview")
+            .style.display="none";
+
+            document.getElementById("photoName")
+            .innerText="कोई फोटो चयनित नहीं";
+
+            document.getElementById("documentName")
+            .innerText="कोई दस्तावेज़ चयनित नहीं";
+
+            photoFile=null;
+            documentFile=null;
+
+        }else{
+
+            showStatus(
+                "❌ " + result.message,
+                false
+            );
+
+        }
+
+
+    }catch(error){
+
+        showStatus(
+            "❌ Upload error: " + error.message,
+            false
+        );
+
+    }
+
+
+    button.disabled=false;
+
+    button.innerText=
+    "✅ आवेदन जमा करें";
+}
+
+
+function showStatus(message,success){
+
+    const status =
+    document.getElementById("status");
+
+    status.innerText=message;
+
+    status.className=
+    "status " +
+    (success ? "success":"error");
+}
+
+</script>
+
+</body>
+</html>
